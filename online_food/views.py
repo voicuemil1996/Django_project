@@ -2,8 +2,8 @@ from rest_framework import generics
 from .models import Product, Category, Review
 from .serializers import ProductSerializer, CategorySerializer, ReviewSerializer
 from django.http import HttpResponse
-from django.core.serializers import serialize
 from .enpoints import *
+from .filters import ProductFilters
 
 
 def index(request):
@@ -32,10 +32,9 @@ class ProductList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Product.objects.all()
-        category = self.request.query_params.get('category')
-        if category is not None:
-            queryset = queryset.filter(category=category)
-        return queryset
+        product_filter = ProductFilters(self, queryset)
+        product_filter.apply_filters()
+        return product_filter.queryset
 
 
 class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -49,8 +48,6 @@ class ReviewList(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Review.objects.all()
         product_title = self.request.query_params.get('product_title')
-
-        queryset = Review.objects.all()
         if product_title is not None:
             queryset = queryset.filter(product_title=product_title)
         return queryset
