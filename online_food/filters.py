@@ -111,6 +111,8 @@ class ReviewFilters(BaseFilter):
         self.apply_count_filter()
     
     ############### Sorting methods ###############
+    def treat_sorting_particular_cases(self, order_criteria):
+        pass
 
     ############### Filter Methods ###############
     # todo: Implement rating filter with comparison operators(eg. rating>=3)

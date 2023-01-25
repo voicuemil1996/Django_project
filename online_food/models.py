@@ -17,5 +17,5 @@ class Product(models.Model):
     title = models.CharField(max_length=200, primary_key=True)
     price = models.FloatField()
     description = models.CharField(max_length=200, blank=True)
-    image = models.ImageField(upload_to="images")
+    image = models.ImageField(upload_to="images", blank=True)
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
