@@ -1,5 +1,5 @@
 Hello!
-This project is about an online food store.
+This project is about an online restaurant.
 
 Possible endpoints:
 - categories/
