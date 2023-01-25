@@ -1,5 +1,4 @@
 from django.db.models import Count, Avg, Sum
-from .models import Product, Category, Review
 from abc import ABC, abstractmethod
 
 class BaseFilter(ABC):
@@ -45,6 +44,11 @@ class BaseFilter(ABC):
         if description is not None:
             self.queryset = self.queryset.filter(description=description)
 
+    def apply_count_filter(self):
+        count = self.product_obj.request.query_params.get('count')
+        if count is not None:
+            self.queryset = self.queryset[:int(count)]
+
 
 class ProductFilters(BaseFilter):
     
@@ -57,7 +61,6 @@ class ProductFilters(BaseFilter):
     
     ############### Sorting methods ###############
     def treat_sorting_particular_cases(self, order_criteria):
-        #todo: Implement sorting by average_rating
         if 'avg_rating' in order_criteria:
             self.queryset = self.queryset.annotate(avg_rating=Avg('review__rating'))
         if 'popularity' in order_criteria:
@@ -66,6 +69,7 @@ class ProductFilters(BaseFilter):
             raise ValueError("Sorting by average rating cannot be done yet.")
     
     ############### Filter Methods ###############
+    #todo: Implement two filters on the same time
     def apply_category_filter(self):
         category = self.product_obj.request.query_params.get('category')
         if category is not None:
@@ -81,18 +85,14 @@ class ProductFilters(BaseFilter):
     def apply_price_filter(self):
         pass
 
-    def apply_count_filter(self):
-        count = self.product_obj.request.query_params.get('count')
-        if count is not None:
-            self.queryset = self.queryset[:int(count)]
 
 class CategoryFilters(BaseFilter):
 
     def apply_filters(self):
         self.apply_sorting()
         self.apply_description_filter()
-        # self.apply_category_filter()
-        # self.apply_count_filter()
+        self.apply_count_filter()
+        
     
     ############### Sorting methods ###############
     def treat_sorting_particular_cases(self, order_criteria):
@@ -100,4 +100,24 @@ class CategoryFilters(BaseFilter):
             self.queryset = self.queryset.annotate(total_price=Sum('product__price'))
 
     ############### Filter Methods ###############
+
+
+class ReviewFilters(BaseFilter):
+
+    def apply_filters(self):
+        self.apply_sorting()
+        self.apply_description_filter()
+        self.apply_product_title_filter()
+        self.apply_count_filter()
     
+    ############### Sorting methods ###############
+
+    ############### Filter Methods ###############
+    # todo: Implement rating filter with comparison operators(eg. rating>=3)
+    def apply_rating_filter(self):
+        pass
+
+    def apply_product_title_filter(self):
+        product_title = self.product_obj.request.query_params.get('product_title')
+        if product_title is not None:
+            self.queryset = self.queryset.filter(product_title=product_title)

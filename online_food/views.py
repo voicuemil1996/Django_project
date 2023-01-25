@@ -3,12 +3,13 @@ from .models import Product, Category, Review
 from .serializers import ProductSerializer, CategorySerializer, ReviewSerializer
 from django.http import HttpResponse
 from .enpoints import *
-from .filters import ProductFilters
+from .filters import ProductFilters, CategoryFilters, ReviewFilters
 
 
 def index(request):
     #todo:beautify the below on html page
-    return HttpResponse("URLs:/n")
+    return HttpResponse("Read the readme.txt")
+                        # ("URLs:/n")
                         # f"{categories}/n"
                         # f"{categories_details}/n"
                         # f"{products}/n"
@@ -18,8 +19,12 @@ def index(request):
 
 
 class CategoryList(generics.ListCreateAPIView):
-    queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    def get_queryset(self):
+        queryset = Category.objects.all()
+        category_filter = CategoryFilters(self, queryset)
+        category_filter.apply_filters()
+        return category_filter.queryset
 
 
 class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -47,10 +52,9 @@ class ReviewList(generics.ListCreateAPIView):
     
     def get_queryset(self):
         queryset = Review.objects.all()
-        product_title = self.request.query_params.get('product_title')
-        if product_title is not None:
-            queryset = queryset.filter(product_title=product_title)
-        return queryset
+        review_filter = ReviewFilters(self, queryset)
+        review_filter.apply_filters()
+        return review_filter.queryset
 
 
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):

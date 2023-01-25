@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.fields import Field, empty
 from .models import Product, Category, Review
 
         
@@ -12,7 +11,7 @@ class ProductSerializer(serializers.ModelSerializer):
         if not len(ratings_tuples):
             return '-'
         ratings_values = [rating_tuple[0] for rating_tuple in ratings_tuples]
-        return sum(ratings_values)/len(ratings_values)
+        return round(sum(ratings_values)/len(ratings_values), 2)
         
     def get_reviews_count(self, obj):
         reviews_count = Review.objects.all().filter(product_title=obj.title)
