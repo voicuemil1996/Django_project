@@ -1,5 +1,5 @@
 Hello!
-This project is about an online food store.
+This project is about an online restaurant.
 
 Possible endpoints:
 - categories/
@@ -27,3 +27,14 @@ Category:
 
 Review:
 - product_title={product_title_field}
+
+Examples:
+/products/?category=Pizza&order_by=avg_rating:desc&count=2
+/products/?category=Pizza&order_by=popularity:desc
+/categories/?order_by=total_price:desc
+/reviews/?product_title=pizza_margherita&order_by=rating
+
+Pytest command eg.:
+pytest .\online_food\tests.py
+pytest .\online_food\tests.py::TestReview
+pytest .\online_food\tests.py::TestReview::test_get_specific_review
