@@ -7,16 +7,10 @@ from .filters import ProductFilters, CategoryFilters, ReviewFilters
 
 
 def index(request):
-    #todo:beautify the below on html page
-    return HttpResponse("Read the readme.txt")
-                        # ("URLs:/n")
-                        # f"{categories}/n"
-                        # f"{categories_details}/n"
-                        # f"{products}/n"
-                        # f"{product_details}/n"
-                        # f"{reviews}/n"
-                        # f"{reviews_details}/n")
-
+    f = open('readme.txt', 'r')
+    file_content = f.read()
+    f.close()
+    return HttpResponse(file_content, content_type="text/plain")
 
 class CategoryList(generics.ListCreateAPIView):
     serializer_class = CategorySerializer
