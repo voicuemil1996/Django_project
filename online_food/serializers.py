@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Product, Category, Review
 
-        
+
 class ProductSerializer(serializers.ModelSerializer):
     avg_rating = serializers.SerializerMethodField('get_average_rating_value')
     reviews_count = serializers.SerializerMethodField('get_reviews_count')
@@ -22,6 +22,13 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ('title', 'price', 'description', 'image', 'category', 'avg_rating', 'reviews_count')
 
 
+class ProductDetailSerializer(ProductSerializer):
+    
+    class Meta:
+        model = Product
+        fields = ('price', 'description', 'image', 'category', 'avg_rating', 'reviews_count')
+
+
 class CategorySerializer(serializers.ModelSerializer):
     total_price = serializers.SerializerMethodField('get_total_price_value')
 
@@ -33,6 +40,14 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('title', 'description', 'total_price')
+
+
+class CategoryDetailSerializer(CategorySerializer):
+    total_price = serializers.SerializerMethodField('get_total_price_value')
+
+    class Meta:
+        model = Category
+        fields = ('description', 'total_price')
 
 
 class ReviewSerializer(serializers.ModelSerializer):

@@ -1,6 +1,6 @@
 from rest_framework import generics
 from .models import Product, Category, Review
-from .serializers import ProductSerializer, CategorySerializer, ReviewSerializer
+from .serializers import ProductSerializer, CategorySerializer, ReviewSerializer, CategoryDetailSerializer, ProductDetailSerializer
 from django.http import HttpResponse
 from .enpoints import *
 from .filters import ProductFilters, CategoryFilters, ReviewFilters
@@ -23,7 +23,8 @@ class CategoryList(generics.ListCreateAPIView):
 
 class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+    serializer_class = CategoryDetailSerializer
+
 
 #TODO: Raise specific errors when trying to post unwanted values (eg. price<=0)
 class ProductList(generics.ListCreateAPIView):
@@ -38,7 +39,7 @@ class ProductList(generics.ListCreateAPIView):
 
 class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+    serializer_class = ProductDetailSerializer
 
 
 class ReviewList(generics.ListCreateAPIView):
