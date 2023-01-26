@@ -25,7 +25,7 @@ class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
-#todo: Raise specific errors when trying to post unwanted values (eg. price<=0)
+#TODO: Raise specific errors when trying to post unwanted values (eg. price<=0)
 class ProductList(generics.ListCreateAPIView):
     serializer_class = ProductSerializer
 
