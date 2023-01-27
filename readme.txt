@@ -1,7 +1,7 @@
 Hello!
 This project is about an online restaurant.
 
-Possible endpoints:
+Endpoints:
 - categories/
 - categories/{category_title}/
 - products
