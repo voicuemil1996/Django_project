@@ -1,8 +1,9 @@
 from django.urls import reverse
 from rest_framework.test import APIClient
-from time import sleep
+from abc import abstractmethod
 
-#TODO: make the testing framework to be more oop oriented
+
+#TODO: Implement cleanup as pytest fixture
 client = APIClient()
 
 category_list = 'category_list'
@@ -12,121 +13,164 @@ category_detail = 'category_detail'
 review_detail = 'review_detail'
 product_detail = 'product_detail'
 
+def cleanup():
+    for api_object in BaseApi.junk:
+        api_object.delete()
+        print(f"Object of type {type(api_object)} deleted")
 
-category_title = "test_category_title"
-category_test_dict = {
-    "title": category_title,
-    "description": "test_desc"
-}
 
-product_title = "test_product_title"
-product_test_dict = {
-    "title": product_title,
-    "price": 1.0,
-    "description": "test_desc",
-    "image": "",
-    "category": category_title
-}
+class BaseApi():
+    junk = []
 
-review_test_dict = {
-    "rating": 1,
-    "description": "test_desc",
-    "product_title": product_title
-}
+    def __init__(self):
+        self.payload = ""
+        self.response = {}
+        self.url_detail = ""
+        self.set_payload()
 
-class TestProductUtils():
-    products_created = []
-
-    @staticmethod
-    def clean_up():
-        for title in TestProductUtils.products_created:
-            url = reverse(product_detail, args=[title])
-            client.delete(url)
-
-    @staticmethod
-    def set_up_product():
-        url = reverse(category_list)
-        response = client.post(url, category_test_dict)
-        print(f"Setup product: {response.data}")
-    
-    @staticmethod
-    def create_products():
-        TestProductUtils.set_up_product()
-        for i in range(0,2):
-            product_test_dict["title"] = product_test_dict["title"] + str(i)
-            url = reverse(product_list)
-            response = client.post(url, product_test_dict)
-            TestProductUtils.products_created.append(response.data['title'])
-
-    @staticmethod
-    def get_product_title():
-        """Populate the database with Product entities
-        and return first entry's title
+    # GET
+    def fetch(self):
         """
-        TestProductUtils.create_products()
-        url = reverse(product_list)
-        return client.get(url).data[0]['title']
-    
-
-class TestCategoryUtils():
-    
-    categories_created = []
-
-    @staticmethod
-    def clean_up():
-        for title in TestCategoryUtils.categories_created:
-            url = reverse(category_detail, args=[title])
-            client.delete(url)
-
-    @staticmethod
-    def create_categories():
-        for i in range(0,3):
-            category_test_dict["title"] = category_test_dict["title"] + str(i)
-            url = reverse(category_list)
-            response = client.post(url, category_test_dict)
-            print(response.data)
-            TestCategoryUtils.categories_created.append(response.data['title'])
-
-    @staticmethod
-    def get_category_title():
-        """Populate the database with Category entities
-        and return first entry's title
+        Do a get request using current object URL
+        :return: request's response
         """
-        TestCategoryUtils.create_categories()
-        url = reverse(category_list)
-        return client.get(url).data[0]['title']
-    
-class TestReviewUtils():
-    
-    reviews_created = []
 
-    @staticmethod
-    def clean_up():
-        for id in TestReviewUtils.reviews_created:
-            url = reverse(review_detail, args=[id])
-            client.delete(url)
-
-    @staticmethod
-    def set_up_review():
-        TestProductUtils.set_up_product()
-        url = reverse(product_list)
-        response = client.post(url, product_test_dict)
-        print(response.data)
+        response = client.get(self.url_detail)
+        print('GET', response.json(), response.status_code, sep='\n')
+        self.response = response
+        return response
     
-    @staticmethod
-    def create_reviews():
-        TestReviewUtils.set_up_review()
-        for i in range(0,2):
-            url = reverse(review_list)
-            response = client.post(url, review_test_dict)
-            print(response.data)
-            TestReviewUtils.reviews_created.append(response.data['id'])
-
-    @staticmethod
-    def get_review_id():
-        """Populate the database with Review entities
-        and return first entry's id
+    def fetch_all(self):
         """
-        TestReviewUtils.create_reviews()
-        url = reverse(review_list)
-        return client.get(url).data[0]['id']
+        Do a get request using current object URL
+        :return: request's response
+        """
+
+        response = client.get(self.URL_LIST)
+        print('GET', response.json(), response.status_code, sep='\n')
+        self.response = response
+        return response
+
+    # POST
+    def create(self):
+        print(self.payload)
+        response = client.post(self.URL_LIST, self.payload)
+        print('POST', response.json(), response.status_code, sep='\n')
+        self.response = response
+        BaseApi.junk.append(self)
+
+    # PATCH
+    def update(self):
+        response = client.patch(self.url_detail, self.payload)
+        print('PATCH', response.json(), response.status_code, sep='\n')
+        self.response = response
+        # if response.status_code == 422:
+        #     print(self.payload)
+        #     raise HTTPError(url=self.API_URL, code=response.status_code, msg=response.json(), hdrs=self.api_key, fp='')
+
+    # PUT
+    def upgrade(self):
+        response = client.put(self.url_detail, self.payload)
+        print('PUT', response.json(), response.status_code, sep='\n')
+        self.response = response
+        # if response.status_code == 422:
+        #     print(self.payload)
+        #     raise HTTPError(url=self.API_URL, code=response.status_code, msg=response.json(), hdrs=self.api_key, fp='')
+
+    # DELETE
+    def delete(self):
+        response = client.delete(self.url_detail)
+        print('DELETE', response.status_code, sep='\n')
+        self.response = response
+        # if response.status_code == 404:
+        #     print(self.payload)
+        #     raise HTTPError(url=self.API_URL, code=response.status_code, msg=response.json(), hdrs=self.api_key, fp='')
+ 
+    # PAYLOAD
+    @abstractmethod
+    def set_payload(self):
+        pass
+
+class Product(BaseApi):
+    URL_LIST = reverse(product_list)
+
+    def __init__(self, category, title="test_product", description="test", price=1.0, image=""):
+        self.title = title
+        self.description = description
+        self.price = price
+        self.image = image
+        self.category = category
+        self.url_detail = reverse(product_detail, args=[title])
+        super().__init__()
+
+    def set_payload(self):
+        self.payload = {
+            "title": self.title,
+            "description" : self.description,
+            "price": self.price,
+            "image": self.image,
+            "category": self.category
+        }
+    
+    def create(self):
+        super().create()
+        self.url_detail = reverse(product_detail, args=[self.title])
+
+    @staticmethod
+    def pre_setup():
+        category_obj = Category()
+        category_obj.create()
+
+        return category_obj
+    
+
+class Category(BaseApi):
+    URL_LIST = reverse(category_list)
+
+    def __init__(self, title="test_category", description="test"):
+        self.title = title
+        self.description = description
+        super().__init__()
+
+    def set_payload(self):
+        self.payload = {
+            "title": self.title,
+            "description" : self.description,
+        }
+    
+    def create(self):
+        super().create()
+        self.url_detail = reverse(category_detail, args=[self.title])
+
+
+class Review(BaseApi):
+    URL_LIST = reverse(review_list)
+
+    def __init__(self, product_title, rating=1, description="test"):
+        self.id = ""
+        self.product_title = product_title
+        self.description = description
+        self.rating = rating 
+        super().__init__()
+
+    def set_payload(self):
+        self.payload = {
+            "rating": self.rating,
+            "description" : self.description,
+            "product_title": self.product_title
+        }
+
+    def create(self):
+        super().create()
+        self.id = self.response.json()['id']
+        self.url_detail = reverse(review_detail, args=[self.id])
+
+    @staticmethod
+    def pre_setup():
+        category_obj = Category()
+        category_obj.create()
+
+        product_obj = Product(category=category_obj.title)
+        product_obj.create()
+
+        return product_obj
